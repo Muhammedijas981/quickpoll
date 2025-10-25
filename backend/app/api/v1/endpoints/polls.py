@@ -74,21 +74,40 @@ async def vote_on_poll(poll_id: str, vote_data: VoteRequest):
     # Record vote
     updated_poll = db.vote_on_poll(poll_id, vote_data.optionId)
     
-    # Broadcast vote to all connected clients
+    # Broadcast vote to all connected clients - ONLY send IDs, not full poll
     await manager.broadcast({
         "type": "vote",
         "data": {
             "pollId": poll_id,
-            "optionId": vote_data.optionId,
-            "poll": updated_poll
+            "optionId": vote_data.optionId
         }
     })
     
     return updated_poll
 
-
 @router.post("/{poll_id}/like", response_model=PollResponse)
 async def like_poll(poll_id: str):
+    """Like a poll"""
+    poll = db.get_poll(poll_id)
+    if not poll:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Poll not found"
+        )
+    
+    # Record like
+    updated_poll = db.like_poll(poll_id)
+    
+    # Broadcast like to all connected clients - ONLY send ID
+    await manager.broadcast({
+        "type": "like",
+        "data": {
+            "pollId": poll_id
+            # ← Removed "poll" field
+        }
+    })
+    
+    return updated_poll
     """Like a poll"""
     poll = db.get_poll(poll_id)
     if not poll:

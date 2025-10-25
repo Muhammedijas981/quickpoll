@@ -15,12 +15,19 @@ import { Poll } from "@/types/poll";
 import { formatDate } from "@/lib/utils";
 import { BarChart3, Users } from "lucide-react";
 import { pollsApi } from "@/lib/api";
+import { usePollStore } from "@/store/pollStore";
+import { useEffect, useState } from "react";
 
 interface PollCardProps {
   poll: Poll;
 }
 
-export function PollCard({ poll }: PollCardProps) {
+export function PollCard({ poll: initialPoll }: PollCardProps) {
+  const polls = usePollStore((state) => state.polls);
+
+  // Find the latest version of this poll from the store
+  const poll = polls.find((p) => p.id === initialPoll.id) || initialPoll;
+
   const handleLike = async (pollId: string) => {
     await pollsApi.likePoll(pollId);
   };

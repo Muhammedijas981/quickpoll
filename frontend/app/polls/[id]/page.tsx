@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,23 +19,20 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
 import { usePollStore } from "@/store/pollStore";
 import { pollsApi } from "@/lib/api";
-import { useWebSocket } from "@/hooks/useWebSocket";
 import { formatDate } from "@/lib/utils";
 import { ArrowLeft, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function PollDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const pollId = params.id as string;
 
-  const { currentPoll, setCurrentPoll } = usePollStore();
+  const currentPoll = usePollStore((state) => state.currentPoll);
+  const setCurrentPoll = usePollStore((state) => state.setCurrentPoll);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [hasVoted, setHasVoted] = useState(false);
-
-  // Connect to WebSocket
-  useWebSocket();
 
   useEffect(() => {
     const fetchPoll = async () => {

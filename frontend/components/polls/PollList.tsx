@@ -6,14 +6,10 @@ import { pollsApi } from "@/lib/api";
 import { PollCard } from "./PollCard";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ErrorMessage } from "@/components/common/ErrorMessage";
-import { useWebSocket } from "@/hooks/useWebSocket";
 
 export function PollList() {
   const { polls, isLoading, error, setPolls, setLoading, setError } =
     usePollStore();
-
-  // Connect to WebSocket for real-time updates
-  useWebSocket();
 
   useEffect(() => {
     const fetchPolls = async () => {
@@ -40,7 +36,12 @@ export function PollList() {
     return <ErrorMessage message={error} />;
   }
 
-  if (polls.length === 0) {
+  // Deduplicate polls by ID (just in case)
+  const uniquePolls = Array.from(
+    new Map(polls.map((poll) => [poll.id, poll])).values()
+  );
+
+  if (uniquePolls.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground text-lg">
@@ -52,7 +53,7 @@ export function PollList() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {polls.map((poll) => (
+      {uniquePolls.map((poll) => (
         <PollCard key={poll.id} poll={poll} />
       ))}
     </div>

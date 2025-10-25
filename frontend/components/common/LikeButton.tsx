@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { usePollStore } from "@/store/pollStore";
 
 interface LikeButtonProps {
   pollId: string;
@@ -12,7 +13,13 @@ interface LikeButtonProps {
 }
 
 export function LikeButton({ pollId, initialLikes, onLike }: LikeButtonProps) {
-  const [likes, setLikes] = useState(initialLikes);
+  const polls = usePollStore((state) => state.polls);
+  const currentPoll = usePollStore((state) => state.currentPoll);
+
+  // Get live likes from store
+  const poll = polls.find((p) => p.id === pollId) || currentPoll;
+  const likes = poll?.likes ?? initialLikes;
+
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,7 +29,6 @@ export function LikeButton({ pollId, initialLikes, onLike }: LikeButtonProps) {
     setIsLoading(true);
     try {
       await onLike(pollId);
-      setLikes((prev) => prev + 1);
       setIsLiked(true);
     } catch (error) {
       console.error("Failed to like poll:", error);
